@@ -35,4 +35,4 @@ function Inject(token) {
   }
 }
 
-module.exports = Inject
+exports.Inject = Inject

@@ -8,6 +8,7 @@ class InstanceLoader {
   }
 
   async createInstancesOfDependencies() {
+    debugger
     const modules = this.container.getModules()
     this.createPrototypes(modules)
     await this.createInstances(modules)

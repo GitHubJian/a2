@@ -5,17 +5,24 @@ class ModuleCompiler {
     this.moduleTokenFactory = new ModuleTokenFactory()
   }
 
-  async compile(metatype, scope) {
-    const { type } = await this.extractMetadata(metatype)
-    const token = this.moduleTokenFactory.create(type, scope)
+  compile(metatype) {
+    // const { type } = await this.extractMetadata(metatype)
+    const token = this.moduleTokenFactory.create(metatype)
 
-    return { type, token }
+    return {
+      type: metatype,
+      token
+    }
   }
 
-  async extractMetadata(metatype) {
-    metatype = await metatype
-    return { type: metatype }
-  }
+  // async extractMetadata(metatype) {
+  //   debugger
+  //   metatype = await metatype
+
+  //   return {
+  //     type: metatype
+  //   }
+  // }
 }
 
 module.exports = ModuleCompiler

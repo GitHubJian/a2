@@ -1,5 +1,5 @@
 const constants = require('../../constants')
-const flatten_util = require('../../utils')
+const flatten_util = require('../../utils/flatten.util')
 
 function Dependencies(...dependencies) {
   const flattenDeps = flatten_util.flatten(dependencies)

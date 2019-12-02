@@ -1,4 +1,4 @@
-const { Inject, UseGuards } = require('../common')
+const { Dependencies, Inject, UseGuards } = require('../common')
 
 const AuthGuard = require('./app.guard')
 require('./app.service')
