@@ -1,14 +1,14 @@
-const { Dependencies, Inject, UseGuards } = require('../common')
+const { Providers, Dependencies, Inject, UseGuards } = require('../common')
 
 const AuthGuard = require('./app.guard')
-require('./app.service')
+const AppService = require('./app.service')
 
-@Dependencies('AppService')
+@Providers([AppService])
+// @Dependencies(AppService)
 class AppController {
-  @Inject('AppService')
+  @Inject(AppService)
   appService
 
-  @UseGuards(new AuthGuard())
   hello() {
     this.appService.sayHello()
   }

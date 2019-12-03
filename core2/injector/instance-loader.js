@@ -7,8 +7,17 @@ class InstanceLoader {
     this.logger = console
   }
 
-  async createInstancesOfDependencies(module) {
-    await this.createInstances(module)
+  async createInstancesOfDependencies() {
+    const modules = this.container.getModules()
+    this.createPrototypes(modules)
+    await this.createInstances(modules)
+  }
+
+  createPrototypes(modules) {
+    modules.forEach(module => {
+      this.createPrototypesOfComponents(module)
+      this.createPrototypesOfInjectables(module)
+    })
   }
 
   async createInstances(modules) {
@@ -17,11 +26,20 @@ class InstanceLoader {
         await this.createInstancesOfComponents(module)
         await this.createInstancesOfInjectables(module)
 
+        await this.createInstancesOfRoutes(module)
+
         const { name } = module.metatype
 
         console.log(`Compiler Success -> ${name}`)
       })
     )
+  }
+
+  createPrototypesOfComponents(module) {
+    debugger
+    module.components.forEach(wrapper => {
+      this.injector.loadPrototypeOfInstance(wrapper, module.components)
+    })
   }
 
   async createInstancesOfComponents(module) {
@@ -30,6 +48,20 @@ class InstanceLoader {
         async wrapper =>
           await this.injector.loadInstanceOfComponent(wrapper, module)
       )
+    )
+  }
+
+  // createPrototypesOfRoutes(module) {
+  //   module.routes.forEach(wrapper => {
+  //     this.injector.loadPrototypeOfInstance(wrapper, module.routes)
+  //   })
+  // }
+
+  async createInstancesOfRoutes(module) {
+    await Promise.all(
+      [...module.routes.values()].map(async wrapper => {
+        await this.injector.loadInstanceOfRoute(wrapper, module)
+      })
     )
   }
 

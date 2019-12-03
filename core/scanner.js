@@ -1,22 +1,37 @@
-const Container = require('./injector/container')
-const InstanceLoader = require('./injector/instance-loader')
+const constants = require('../common/constants')
 
 class DependenciesScanner {
   constructor() {
-    this.container = new Container()
-    this.instanceLoader = new InstanceLoader(this.container)
+    this._components = new Map()
   }
   async scan(module) {
-    await this.scanForModules(module)
-    debugger
-    await instanceLoader.createInstancesOfDependencies()
+    await this.scanModulesForDependencies(module)
   }
-  async scanForModules(module) {
-    await this.storeModule(module)
+  async scanModulesForDependencies(metatype) {
+    this.reflectComponents(metatype)
   }
-  async storeModule(module) {
-    await this.container.addModule(module)
+  reflectComponents(module) {
+    const components = [
+      ...this.reflectMetadata(module, constants.METADATA.PROVIDERS)
+    ]
+
+    components.forEach(component => {
+      this.storeComponent(component)
+    })
+  }
+  reflectMetadata(metatype, metadataKey) {
+    return Reflect.getMetadata(metadataKey, metatype) || []
+  }
+  storeComponent(component) {
+    this._components.set(component.name, {
+      name: component.name,
+      metatype: component,
+      instance: null,
+      isResolved: false
+    })
+
+    return component.name
   }
 }
 
-module.exports = DependenciesScanner
+exports.DependenciesScanner = DependenciesScanner
