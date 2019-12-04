@@ -2,19 +2,13 @@ const shared_utils = require('../common/utils/shared.utils')
 const constants = require('../common/constants')
 
 class Injector {
-  constructor() {}
   loadPrototypeOfInstance({ metatype, name }, collection) {
-    debugger
     if (!collection) {
       return null
     }
 
     const target = collection.get(name)
-    if (
-      target.isResolved ||
-      !shared_utils.isNil(target.inject) ||
-      !metatype.prototype
-    ) {
+    if (target.isResolved || !metatype.prototype) {
       return null
     }
 
@@ -30,12 +24,11 @@ class Injector {
     await this.loadInstance(wrapper, components, module)
   }
   async loadInstance(wrapper, collection, module) {
-    debugger
     if (wrapper.isPending) {
       return wrapper.done$
     }
     const done = this.applyDoneHook(wrapper)
-    const { name, inject } = wrapper
+    const { name } = wrapper
     const targetWrapper = collection.get(name)
     if (shared_utils.isUndefined(targetWrapper)) {
       throw new Error('runtime exception.')
@@ -44,21 +37,12 @@ class Injector {
       return
     }
 
-    const callback = async instances => {
-      debugger
-      const properties = await this.resolveProperties(wrapper, module, inject)
-      const instance = await this.instantiateClass(
-        instances,
-        wrapper,
-        targetWrapper
-      )
+    const properties = await this.resolveProperties(wrapper, module)
+    const instance = await this.instantiateClass(wrapper, targetWrapper)
 
-      this.applyProperties(instance, properties)
-
-      done()
-    }
     debugger
-    await this.resolveConstructorParams(wrapper, module, inject, callback)
+    this.applyProperties(instance, properties)
+    done()
   }
   applyProperties(instance, properties) {
     if (!shared_utils.isObject(instance)) {
@@ -78,11 +62,7 @@ class Injector {
 
     return done
   }
-  async resolveProperties(wrapper, module, inject) {
-    if (!shared_utils.isNil(inject)) {
-      return []
-    }
-
+  async resolveProperties(wrapper, module) {
     const properties = this.reflectProperties(wrapper.metatype)
 
     const instances = await Promise.all(
@@ -149,72 +129,38 @@ class Injector {
       Object.assign({}, dependencyContext, { name }),
       wrapper
     )
-    debugger
+
     return instanceWrapper
   }
   async lookupComponent(components, module, dependencyContext, wrapper) {
     const { name } = dependencyContext
     const component = components.get(name)
-    debugger
+
     return component
   }
-  async instantiateClass(instances, wrapper, targetMetatype) {
-    const { metatype, inject } = wrapper
-    if (shared_utils.isNil(inject)) {
-      targetMetatype.instance = new metatype(...instances)
-    } else {
-      const factoryResult = targetMetatype.metatype(...instances)
-      targetMetatype.instance = await factoryResult
-    }
+  async instantiateClass(wrapper, targetMetatype) {
+    const { metatype } = wrapper
+
+    targetMetatype.instance = new metatype()
 
     targetMetatype.isResolved = true
     return targetMetatype.instance
   }
-  async resolveConstructorParams(wrapper, module, inject, callback) {
-    const dependencies = shared_utils.isNil(inject)
-      ? this.reflectConstructorParams(wrapper.metatype)
-      : inject
-    let isResolved = true
-    debugger
-    const instances = await Promise.all(
-      dependencies.map(async (param, index) => {
-        try {
-          debugger
-          const paramWrapper = await this.resolveSingleParam(
-            wrapper,
-            param,
-            { index, dependencies },
-            module
-          )
 
-          if (!paramWrapper.isResolved) {
-            isResolved = false
-          }
-          debugger
-          return paramWrapper.instance
-        } catch (e) {
-          console.error(e)
-
-          return undefined
-        }
-      })
-    )
-    isResolved && (await callback(instances))
-  }
   reflectConstructorParams(type) {
     const paramtypes =
       Reflect.getMetadata(constants.PARAMTYPES_METADATA, type) || []
 
-    const selfParams = this.reflectSelfParams(type)
-    selfParams.forEach(({ index, param }) => (paramtypes[index] = param))
+    // const selfParams = this.reflectSelfParams(type)
+    // selfParams.forEach(({ index, param }) => (paramtypes[index] = param))
 
     return paramtypes
   }
-  reflectSelfParams(type) {
-    return (
-      Reflect.getMetadata(constants.SELF_DECLARED_DEPS_METADATA, type) || []
-    )
-  }
+  // reflectSelfParams(type) {
+  //   return (
+  //     Reflect.getMetadata(constants.SELF_DECLARED_DEPS_METADATA, type) || []
+  //   )
+  // }
 }
 
 exports.Injector = Injector

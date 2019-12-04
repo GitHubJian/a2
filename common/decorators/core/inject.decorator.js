@@ -5,20 +5,19 @@ function Inject(token) {
   return (target, key, index) => {
     token = token || Reflect.getMetadata('design:type', target, key)
     const type = token && shared_utils.isFunction(token) ? token.name : token
+    // if (shared_utils.isUndefined(index)) {
+    //   let dependencies =
+    //     Reflect.getMetadata(constants.SELF_DECLARED_DEPS_METADATA, target) || []
+    //   dependencies = [...dependencies, { index, param: type }]
 
-    if (shared_utils.isUndefined(index)) {
-      let dependencies =
-        Reflect.getMetadata(constants.SELF_DECLARED_DEPS_METADATA, target) || []
-      dependencies = [...dependencies, { index, param: type }]
+    //   Reflect.defineMetadata(
+    //     constants.SELF_DECLARED_DEPS_METADATA,
+    //     dependencies,
+    //     target
+    //   )
 
-      Reflect.defineMetadata(
-        constants.SELF_DECLARED_DEPS_METADATA,
-        dependencies,
-        target
-      )
-
-      return
-    }
+    //   return
+    // }
 
     let properties =
       Reflect.getMetadata(

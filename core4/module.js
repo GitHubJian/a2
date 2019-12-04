@@ -24,8 +24,8 @@ class Module {
     this._components.set(this._metatype.name, {
       name: this._metatype.name,
       metatype: this._metatype,
-      isResolved: false,
-      instance: null
+      instance: null,
+      isResolved: false
     })
   }
 }
